@@ -5,23 +5,32 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Alert,
 } from 'react-native';
+import { useAuth } from '../context/AuthContext';
 
-export default function HomeScreen({ navigation, route }) {
-  // Get user data from navigation params
-  const user = route.params?.user || {
-    firstName: 'Guest',
-    lastName: '',
-    email: 'No email',
-    userType: 'guest'
-  };
+export default function HomeScreen() {
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    // Reset navigation stack to Login screen
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],
-    });
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          onPress: async () => {
+            await logout();
+            // Navigation will happen automatically via AuthContext
+          },
+          style: 'destructive',
+        },
+      ]
+    );
   };
 
   return (
@@ -29,13 +38,13 @@ export default function HomeScreen({ navigation, route }) {
       <View style={styles.content}>
         <View style={styles.welcomeContainer}>
           <Text style={styles.welcomeTitle}>
-            Welcome, {user.firstName} {user.lastName}!
+            Welcome, {user?.firstName} {user?.lastName}!
           </Text>
           <Text style={styles.welcomeSubtitle}>
-            {user.email}
+            {user?.email}
           </Text>
           <View style={styles.userTypeBadge}>
-            <Text style={styles.userTypeText}>{user.userType}</Text>
+            <Text style={styles.userTypeText}>{user?.userType}</Text>
           </View>
         </View>
 
@@ -43,21 +52,21 @@ export default function HomeScreen({ navigation, route }) {
           <Text style={styles.cardTitle}>Account Information</Text>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>User ID:</Text>
-            <Text style={styles.infoValue}>{user.id}</Text>
+            <Text style={styles.infoValue}>{user?.id}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Name:</Text>
             <Text style={styles.infoValue}>
-              {user.firstName} {user.lastName}
+              {user?.firstName} {user?.lastName}
             </Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Email:</Text>
-            <Text style={styles.infoValue}>{user.email}</Text>
+            <Text style={styles.infoValue}>{user?.email}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Account Type:</Text>
-            <Text style={styles.infoValue}>{user.userType}</Text>
+            <Text style={styles.infoValue}>{user?.userType}</Text>
           </View>
         </View>
 

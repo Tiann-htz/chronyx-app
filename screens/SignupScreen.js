@@ -12,8 +12,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
-// REPLACE THIS URL AFTER DEPLOYMENT
 const API_URL = 'https://qr-logix.vercel.app/api/qrlogixApi';
 
 export default function SignupScreen({ navigation }) {
@@ -23,6 +23,7 @@ export default function SignupScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleSignup = async () => {
     // Validate input
@@ -52,13 +53,26 @@ export default function SignupScreen({ navigation }) {
       });
 
       if (response.data.success) {
+        // Create user object
+        const newUser = {
+          id: response.data.userId,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim().toLowerCase(),
+          userType: 'user'
+        };
+
         Alert.alert(
           'Success!', 
-          'Account created successfully! You can now login.',
+          'Account created successfully!',
           [
             {
               text: 'OK',
-              onPress: () => navigation.navigate('Login')
+              onPress: async () => {
+                // Save user data using auth context
+                await login(newUser);
+                // Navigation will happen automatically via AuthContext
+              }
             }
           ]
         );

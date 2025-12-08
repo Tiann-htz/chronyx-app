@@ -12,14 +12,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
-// Use the same API URL as SignupScreen
 const API_URL = 'https://qr-logix.vercel.app/api/qrlogixApi';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     // Validate input
@@ -37,26 +38,23 @@ export default function LoginScreen({ navigation }) {
       });
 
       if (response.data.success) {
-        // Navigate to Home screen and pass user data
-        navigation.navigate('Home', {
-          user: response.data.user
-        });
+        // Save user data using auth context
+        await login(response.data.user);
         
         // Clear form
         setEmail('');
         setPassword('');
+        
+        // Navigation will happen automatically via AuthContext
       }
     } catch (error) {
       console.error('Login error:', error);
       
       if (error.response) {
-        // Server responded with error
         Alert.alert('Error', error.response.data.message || 'Login failed');
       } else if (error.request) {
-        // No response from server
         Alert.alert('Error', 'Cannot connect to server. Please check your internet connection.');
       } else {
-        // Other errors
         Alert.alert('Error', 'Something went wrong. Please try again.');
       }
     } finally {
