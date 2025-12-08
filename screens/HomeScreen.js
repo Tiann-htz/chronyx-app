@@ -7,9 +7,17 @@ import {
   ScrollView,
 } from 'react-native';
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, route }) {
+  // Get user data from navigation params
+  const user = route.params?.user || {
+    firstName: 'Guest',
+    lastName: '',
+    email: 'No email',
+    userType: 'guest'
+  };
+
   const handleLogout = () => {
-    // TODO: Add logout logic here
+    // Reset navigation stack to Login screen
     navigation.reset({
       index: 0,
       routes: [{ name: 'Login' }],
@@ -20,14 +28,43 @@ export default function HomeScreen({ navigation }) {
     <ScrollView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeTitle}>Welcome to QRLogix</Text>
-          <Text style={styles.welcomeSubtitle}>You're successfully logged in!</Text>
+          <Text style={styles.welcomeTitle}>
+            Welcome, {user.firstName} {user.lastName}!
+          </Text>
+          <Text style={styles.welcomeSubtitle}>
+            {user.email}
+          </Text>
+          <View style={styles.userTypeBadge}>
+            <Text style={styles.userTypeText}>{user.userType}</Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Account Information</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>User ID:</Text>
+            <Text style={styles.infoValue}>{user.id}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Name:</Text>
+            <Text style={styles.infoValue}>
+              {user.firstName} {user.lastName}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Email:</Text>
+            <Text style={styles.infoValue}>{user.email}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Account Type:</Text>
+            <Text style={styles.infoValue}>{user.userType}</Text>
+          </View>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Dashboard</Text>
           <Text style={styles.cardText}>
-            This is your home screen. Database connectivity will be added next.
+            You're successfully logged in! Your dashboard features will be added here.
           </Text>
         </View>
 
@@ -36,7 +73,7 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>0</Text>
-              <Text style={styles.statLabel}>Users</Text>
+              <Text style={styles.statLabel}>Tasks</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>0</Text>
@@ -67,16 +104,33 @@ const styles = StyleSheet.create({
   },
   welcomeContainer: {
     marginBottom: 24,
+    backgroundColor: '#48bb78',
+    borderRadius: 12,
+    padding: 20,
   },
   welcomeTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#2d3748',
+    color: '#fff',
     marginBottom: 8,
   },
   welcomeSubtitle: {
     fontSize: 16,
-    color: '#718096',
+    color: '#e6fffa',
+    marginBottom: 12,
+  },
+  userTypeBadge: {
+    backgroundColor: '#2f855a',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  userTypeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
   card: {
     backgroundColor: '#fff',
@@ -96,12 +150,30 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#2d3748',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   cardText: {
     fontSize: 14,
     color: '#718096',
     lineHeight: 20,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  infoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4a5568',
+  },
+  infoValue: {
+    fontSize: 14,
+    color: '#718096',
+    flex: 1,
+    textAlign: 'right',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -126,6 +198,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 12,
+    marginBottom: 20,
   },
   logoutButtonText: {
     color: '#fff',

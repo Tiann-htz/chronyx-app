@@ -8,16 +8,60 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import axios from 'axios';
+
+// Use the same API URL as SignupScreen
+const API_URL = 'https://qr-logix.vercel.app/api/qrlogixApi';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // TODO: Add login logic here
-    console.log('Login attempt:', email, password);
-    navigation.navigate('Home');
+  const handleLogin = async () => {
+    // Validate input
+    if (!email || !password) {
+      Alert.alert('Error', 'Email and password are required');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${API_URL}?endpoint=login`, {
+        email: email.trim().toLowerCase(),
+        password: password,
+      });
+
+      if (response.data.success) {
+        // Navigate to Home screen and pass user data
+        navigation.navigate('Home', {
+          user: response.data.user
+        });
+        
+        // Clear form
+        setEmail('');
+        setPassword('');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      if (error.response) {
+        // Server responded with error
+        Alert.alert('Error', error.response.data.message || 'Login failed');
+      } else if (error.request) {
+        // No response from server
+        Alert.alert('Error', 'Cannot connect to server. Please check your internet connection.');
+      } else {
+        // Other errors
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,6 +83,7 @@ export default function LoginScreen({ navigation }) {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
+              editable={!loading}
             />
           </View>
 
@@ -50,16 +95,28 @@ export default function LoginScreen({ navigation }) {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              editable={!loading}
             />
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
+          <TouchableOpacity 
+            style={[styles.button, loading && styles.buttonDisabled]} 
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+            <TouchableOpacity 
+              onPress={() => navigation.navigate('Signup')}
+              disabled={loading}
+            >
               <Text style={styles.signupLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -115,6 +172,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 12,
+  },
+  buttonDisabled: {
+    backgroundColor: '#9ae6b4',
   },
   buttonText: {
     color: '#fff',
