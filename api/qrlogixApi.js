@@ -2,10 +2,10 @@ const mysql = require('mysql2/promise');
 
 // Create MySQL connection pool with explicit configuration
 const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST || 'mysql-205300-0.cloudclusters.net',
-  port: parseInt(process.env.MYSQL_PORT || '10037'),
+  host: process.env.MYSQL_HOST || 'mysql-205810-0.cloudclusters.net',
+  port: parseInt(process.env.MYSQL_PORT || '10055'),
   user: process.env.MYSQL_USER || 'admin',
-  password: process.env.MYSQL_PASSWORD || 'dCDlAyb5',
+  password: process.env.MYSQL_PASSWORD || '5AqRf7hl',
   database: process.env.MYSQL_DATABASE || 'qrlogix',
   connectionLimit: 10,
   waitForConnections: true,
