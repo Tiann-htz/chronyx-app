@@ -78,11 +78,8 @@ export const uploadImageToCloudinary = async (imageUri) => {
     // Append upload preset (no API key needed with unsigned preset)
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
     
-    // Optional: Add folder organization
-    formData.append('folder', 'chronyx/avatars');
-    
-    // Optional: Add transformation (resize to 500x500 for optimization)
-    formData.append('transformation', 'c_fill,w_500,h_500,g_face');
+    // NOTE: Folder and transformations must be configured in the upload preset
+    // NOT passed here for unsigned uploads
 
     // Upload to Cloudinary
     const response = await fetch(
