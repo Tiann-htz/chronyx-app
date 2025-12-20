@@ -175,7 +175,7 @@ if (endpoint === 'login' && req.method === 'POST') {
         firstName: employees[0].first_name,
         lastName: employees[0].last_name,
         email: employees[0].email,
-        avatarUrl: employees[0].avatar_url, // Include avatar URL
+        avatarUrl: employees[0].avatar_url,
       },
     });
   } catch (dbError) {

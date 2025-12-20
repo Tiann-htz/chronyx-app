@@ -1,7 +1,8 @@
 import * as ImagePicker from 'expo-image-picker';
 
-// ImgBB API (Free - Get your API key from https://api.imgbb.com/)
-const IMGBB_API_KEY = 'dd41f3b792fff17571083eafee9c78f4'; // Replace with your key
+// Cloudinary Configuration
+const CLOUDINARY_CLOUD_NAME = 'dlxsai1kr';
+const CLOUDINARY_UPLOAD_PRESET = 'chronyx_avatars'; // We'll create this in Cloudinary dashboard
 
 export const pickImageFromGallery = async () => {
   try {
@@ -18,7 +19,7 @@ export const pickImageFromGallery = async () => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.5, // Compress to reduce size
+      quality: 0.8, // Good quality for avatars
     });
 
     if (!result.canceled) {
@@ -45,7 +46,7 @@ export const takePhotoWithCamera = async () => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.5,
+      quality: 0.8,
     });
 
     if (!result.canceled) {
@@ -58,46 +59,76 @@ export const takePhotoWithCamera = async () => {
   }
 };
 
-export const uploadImageToImgBB = async (imageUri) => {
+export const uploadImageToCloudinary = async (imageUri) => {
   try {
-    // Convert image to base64
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    // Create form data
+    const formData = new FormData();
     
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64data = reader.result.split(',')[1];
-        
-        try {
-          // Upload to ImgBB
-          const formData = new FormData();
-          formData.append('image', base64data);
-          
-          const uploadResponse = await fetch(
-            `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
-            {
-              method: 'POST',
-              body: formData,
-            }
-          );
-          
-          const data = await uploadResponse.json();
-          
-          if (data.success) {
-            resolve(data.data.url); // Returns the public URL
-          } else {
-            reject(new Error('Upload failed'));
-          }
-        } catch (error) {
-          reject(error);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
+    // Extract file extension
+    const fileExtension = imageUri.split('.').pop();
+    const fileName = `avatar_${Date.now()}.${fileExtension}`;
+    
+    // Append file
+    formData.append('file', {
+      uri: imageUri,
+      type: `image/${fileExtension}`,
+      name: fileName,
     });
+    
+    // Append upload preset (no API key needed with unsigned preset)
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    
+    // Optional: Add folder organization
+    formData.append('folder', 'chronyx/avatars');
+    
+    // Optional: Add transformation (resize to 500x500 for optimization)
+    formData.append('transformation', 'c_fill,w_500,h_500,g_face');
+
+    // Upload to Cloudinary
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.secure_url) {
+      return data.secure_url; // Returns HTTPS URL
+    } else {
+      throw new Error('Upload failed: ' + (data.error?.message || 'Unknown error'));
+    }
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.error('Error uploading to Cloudinary:', error);
     throw error;
+  }
+};
+
+// Optional: Delete image from Cloudinary (requires backend with API secret)
+export const deleteImageFromCloudinary = async (publicId) => {
+  // Note: This requires your backend API to handle deletion
+  // because it needs the API secret which shouldn't be exposed in the app
+  try {
+    const response = await fetch(
+      'YOUR_BACKEND_URL/api/delete-cloudinary-image',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ publicId }),
+      }
+    );
+    
+    const data = await response.json();
+    return data.success;
+  } catch (error) {
+    console.error('Error deleting from Cloudinary:', error);
+    return false;
   }
 };

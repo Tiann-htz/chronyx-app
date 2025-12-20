@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { pickImageFromGallery, takePhotoWithCamera, uploadImageToImgBB } from '../utils/imageUpload';
+import { pickImageFromGallery, takePhotoWithCamera, uploadImageToCloudinary } from '../utils/imageUpload';
 import axios from 'axios';
 
 const API_URL = 'https://chronyx-app.vercel.app/api/chronyxApi';
@@ -50,6 +50,12 @@ export default function MyAccountScreen({ navigation }) {
     new: false,
     confirm: false,
   });
+
+  useEffect(() => {
+  if (user?.avatarUrl) {
+    setAvatarUrl(user.avatarUrl);
+  }
+}, [user?.avatarUrl]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -254,39 +260,45 @@ export default function MyAccountScreen({ navigation }) {
     }
   };
 
-  const uploadAvatar = async (imageUri) => {
-    setLoading(true);
-    try {
-      // Show uploading message
-      Alert.alert('Uploading', 'Please wait while we upload your photo...');
+ const uploadAvatar = async (imageUri) => {
+  setLoading(true);
+  try {
+    // Show uploading message
+    Alert.alert('Uploading', 'Please wait while we upload your photo...');
 
-      // Upload to ImgBB and get URL
-      const uploadedUrl = await uploadImageToImgBB(imageUri);
+    // Upload to Cloudinary and get URL
+    const uploadedUrl = await uploadImageToCloudinary(imageUri);
 
-      // Save URL to database
-      const response = await axios.post(`${API_URL}?endpoint=update-avatar`, {
-        userId: user.id,
+    // Save URL to database
+    const response = await axios.post(`${API_URL}?endpoint=update-avatar`, {
+      userId: user.id,
+      avatarUrl: uploadedUrl,
+    });
+
+    if (response.data.success) {
+      // Update local state first for immediate UI update
+      setAvatarUrl(uploadedUrl);
+      
+      // Update context
+      await updateUser({
         avatarUrl: uploadedUrl,
       });
 
-      if (response.data.success) {
-        // Update local state
-        setAvatarUrl(uploadedUrl);
-
-        // Update user context
-        await updateUser({
-          avatarUrl: uploadedUrl,
-        });
-
-        Alert.alert('Success', 'Profile picture updated successfully!');
-      }
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      Alert.alert('Error', 'Failed to upload profile picture. Please try again.');
-    } finally {
-      setLoading(false);
+      Alert.alert('Success', 'Profile picture updated successfully!');
+      
+      // Refresh account info
+      fetchAccountInfo();
     }
-  };
+  } catch (error) {
+    console.error('Error uploading avatar:', error);
+    Alert.alert(
+      'Error', 
+      error.message || 'Failed to upload profile picture. Please try again.'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getInitials = () => {
     const first = user?.firstName?.charAt(0) || '';
