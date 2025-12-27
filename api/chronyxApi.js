@@ -788,7 +788,7 @@ if (endpoint === 'login' && req.method === 'POST') {
 
      // GET ATTENDANCE HISTORY ENDPOINT
     if (endpoint === 'get-attendance-history' && req.method === 'GET') {
-      const { employeeId, month, year } = req.query;
+      const { employeeId, month, year, status } = req.query;
 
       if (!employeeId || !month || !year) {
         return res.status(400).json({
@@ -801,15 +801,24 @@ if (endpoint === 'login' && req.method === 'POST') {
       try {
         connection = await pool.getConnection();
 
-        // Get all attendance records for the specified month
-        const [records] = await connection.execute(
-          `SELECT * FROM attendance 
+        // Build query with optional status filter
+        let query = `SELECT * FROM attendance 
            WHERE employee_id = ? 
            AND MONTH(date) = ? 
-           AND YEAR(date) = ?
-           ORDER BY date DESC, timestamp DESC`,
-          [employeeId, month, year]
-        );
+           AND YEAR(date) = ?`;
+        
+        const params = [employeeId, month, year];
+
+        // Add status filter if provided and not 'all'
+        if (status && status !== 'all') {
+          query += ` AND status = ?`;
+          params.push(status);
+        }
+
+        query += ` ORDER BY date DESC, timestamp DESC`;
+
+        // Get all attendance records for the specified month
+        const [records] = await connection.execute(query, params);
 
         connection.release();
 

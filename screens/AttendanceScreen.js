@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
+import AttendanceFilterModal from '../components/AttendanceFilterModal';
 import axios from 'axios';
 
 const API_URL = 'https://chronyx-app.vercel.app/api/chronyxApi';
@@ -21,11 +22,13 @@ export default function AttendanceScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
-  const [monthlySummary, setMonthlySummary] = useState(null);
+ const [monthlySummary, setMonthlySummary] = useState(null);
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
-  // Current month and year
-  const [currentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear] = useState(new Date().getFullYear());
+  // Filter state - now mutable
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [selectedStatus, setSelectedStatus] = useState('all');
 
   useEffect(() => {
     // Set header with menu button
@@ -42,6 +45,14 @@ export default function AttendanceScreen({ navigation }) {
 
     fetchAttendanceData();
   }, [navigation]);
+
+
+   // Add useEffect to refetch when filters change
+  useEffect(() => {
+    if (!loading) {
+      fetchAttendanceData();
+    }
+  }, [currentMonth, currentYear, selectedStatus]);
 
   const fetchAttendanceData = async () => {
     setLoading(true);
@@ -65,9 +76,14 @@ export default function AttendanceScreen({ navigation }) {
 
   const fetchAttendanceHistory = async () => {
     try {
-      const response = await axios.get(
-        `${API_URL}?endpoint=get-attendance-history&employeeId=${user.id}&month=${currentMonth}&year=${currentYear}`
-      );
+      let url = `${API_URL}?endpoint=get-attendance-history&employeeId=${user.id}&month=${currentMonth}&year=${currentYear}`;
+      
+      // Add status filter if not 'all'
+      if (selectedStatus !== 'all') {
+        url += `&status=${selectedStatus}`;
+      }
+
+      const response = await axios.get(url);
 
       if (response.data.success) {
         setAttendanceHistory(response.data.data || []);
@@ -180,6 +196,17 @@ export default function AttendanceScreen({ navigation }) {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
+  // Handle filter apply
+  const handleApplyFilter = (filters) => {
+    setCurrentMonth(filters.month);
+    setCurrentYear(filters.year);
+    setSelectedStatus(filters.status);
+    
+    // Fetch new data will be triggered by useEffect
+  };
+
+ 
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -238,7 +265,13 @@ export default function AttendanceScreen({ navigation }) {
           {/* Attendance History Header */}
           <View style={styles.historyHeader}>
             <Text style={styles.historyTitle}>Attendance History</Text>
-            {/* Filter button will be added here later */}
+            <TouchableOpacity 
+              style={styles.filterButton}
+              onPress={() => setShowFilterModal(true)}
+            >
+              <Ionicons name="filter" size={20} color="#1a365d" />
+              <Text style={styles.filterButtonText}>Filter</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Attendance History List */}
@@ -350,6 +383,17 @@ export default function AttendanceScreen({ navigation }) {
         navigation={navigation}
         currentRoute="Attendance"
       />
+
+      <AttendanceFilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApply={handleApplyFilter}
+        currentFilters={{
+          month: currentMonth,
+          year: currentYear,
+          status: selectedStatus,
+        }}
+      />
     </View>
   );
 }
@@ -434,6 +478,27 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1a365d',
   },
+
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a365d',
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#dbeafe',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a365d',
+    marginLeft: 6,
+  },
+  
   attendanceCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
