@@ -8,6 +8,8 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
 
 export default function QRCodeModal({ visible, onClose, qrData, userName, isActive = true, navigation }) {  // Generate QR code URL using a free API
   const qrCodeUrl = qrData 
@@ -69,7 +71,7 @@ export default function QRCodeModal({ visible, onClose, qrData, userName, isActi
                 </View>
               </View>
             ) : (
-              // DEACTIVATED QR CODE - Show warning message
+             // DEACTIVATED QR CODE - Show warning message
               <View style={styles.deactivatedContainer}>
                 <View style={styles.deactivatedIconCircle}>
                   <Ionicons name="alert-circle" size={64} color="#ef4444" />
@@ -78,48 +80,19 @@ export default function QRCodeModal({ visible, onClose, qrData, userName, isActi
                 <Text style={styles.deactivatedTitle}>QR Code Deactivated</Text>
                 
                 <Text style={styles.deactivatedMessage}>
-                  We're sorry, but your QR code has been temporarily deactivated by an administrator. 
-                  You will not be able to use it for attendance until it has been reactivated.
+                  Your QR code has been deactivated by an administrator. 
+                  Please check your Notifications for more details.
                 </Text>
-
-                <View style={styles.deactivatedInfoBox}>
-                  <View style={styles.infoBoxHeader}>
-                    <Ionicons name="information-circle" size={20} color="#3b82f6" />
-                    <Text style={styles.infoBoxTitle}>What should I do?</Text>
-                  </View>
-                  <Text style={styles.infoBoxText}>
-                    Please check your <Text style={styles.infoBoxTextBold}>Notifications</Text> to 
-                    see the reason for deactivation and next steps to resolve this issue.
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  style={styles.viewNotificationsButton}
-                  onPress={() => {
-                    onClose();
-                    navigation.navigate('Notifications');
-                  }}
-                >
-                  <Ionicons name="notifications" size={20} color="#ffffff" />
-                  <Text style={styles.viewNotificationsText}>View Notifications</Text>
-                </TouchableOpacity>
-
-                <View style={styles.contactBox}>
-                  <Ionicons name="call-outline" size={18} color="#64748b" />
-                  <Text style={styles.contactText}>
-                    Need help? Contact your HR department or supervisor for assistance.
-                  </Text>
-                </View>
               </View>
             )}
 
             {/* Close Button */}
-            <TouchableOpacity
+           <TouchableOpacity
               style={[styles.doneButton, !isActive && styles.doneButtonDeactivated]}
               onPress={onClose}
             >
               <Text style={styles.doneButtonText}>
-                {isActive ? 'Done' : 'Close'}
+                {isActive ? 'Done' : 'Got it'}
               </Text>
             </TouchableOpacity>
           </ScrollView>
@@ -276,74 +249,4 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 10,
   },
-  deactivatedInfoBox: {
-    backgroundColor: '#eff6ff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-    width: '100%',
-  },
-  infoBoxHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  infoBoxTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1e40af',
-    marginLeft: 8,
-  },
-  infoBoxText: {
-    fontSize: 14,
-    color: '#475569',
-    lineHeight: 22,
-  },
-  infoBoxTextBold: {
-    fontWeight: '700',
-    color: '#1e40af',
-  },
-  viewNotificationsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#3b82f6',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginBottom: 16,
-    width: '100%',
-    shadowColor: '#3b82f6',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  viewNotificationsText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
-    marginLeft: 8,
-  },
-  contactBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    padding: 12,
-    borderRadius: 8,
-    width: '100%',
-  },
-  contactText: {
-    fontSize: 12,
-    color: '#64748b',
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 18,
-  },
-  
 });

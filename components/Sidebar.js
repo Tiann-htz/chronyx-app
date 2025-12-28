@@ -117,9 +117,9 @@ export default function Sidebar({ visible, onClose, navigation, currentRoute }) 
   const menuItems = [
     { name: 'Home', icon: 'home', screen: 'Home' },
     { name: 'Notifications', icon: 'notifications', screen: 'Notifications' },
-    { name: 'My Account', icon: 'person', screen: 'MyAccount' },
-    { name: 'My Salary', icon: 'cash', screen: 'Salary' },
-    { name: 'My Attendance', icon: 'calendar', screen: 'Attendance' },
+    { name: 'Profile', icon: 'person', screen: 'MyAccount' },
+    { name: 'Salary', icon: 'cash', screen: 'Salary' },
+    { name: 'Attendance', icon: 'calendar', screen: 'Attendance' },
   ];
 
   if (!isVisible && !visible) {

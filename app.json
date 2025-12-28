@@ -4,11 +4,11 @@
     "slug": "chronyx",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/chronyxSize.png",
+    "icon": "./assets/images/chronyxwhite.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/chronyxSize.png",
+      "image": "./assets/images/chronyxwhite.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

@@ -48,7 +48,7 @@ function AppNavigator() {
                 headerStyle: { backgroundColor: '#0A6BA3' },
                 headerTintColor: '#ffffff',
                 headerTitleStyle: { fontWeight: 'bold' },
-                title: 'My Account',
+                title: 'Profile',
               }}
             />
             <Stack.Screen
@@ -58,7 +58,7 @@ function AppNavigator() {
                 headerStyle: { backgroundColor: '#0A6BA3' },
                 headerTintColor: '#ffffff',
                 headerTitleStyle: { fontWeight: 'bold' },
-                title: 'My Salary',
+                title: 'Salary',
               }}
             />
             <Stack.Screen
@@ -68,7 +68,7 @@ function AppNavigator() {
                 headerStyle: { backgroundColor: '#0A6BA3' },
                 headerTintColor: '#ffffff',
                 headerTitleStyle: { fontWeight: 'bold' },
-                title: 'My Attendance',
+                title: 'Attendance',
               }}
             />
             <Stack.Screen
