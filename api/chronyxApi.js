@@ -1051,12 +1051,14 @@ if (endpoint === 'login' && req.method === 'POST') {
       try {
         connection = await pool.getConnection();
 
-        // Get only deactivated QR codes (is_active = 0) for this employee
+        // Get deactivated QR codes with admin name
         const [records] = await connection.execute(
-          `SELECT * FROM employee_qr 
-           WHERE employee_id = ? 
-           AND is_active = 0
-           ORDER BY deactivated_at DESC`,
+          `SELECT eq.*, a.admin_name 
+           FROM employee_qr eq
+           LEFT JOIN admin a ON eq.deactivated_by = a.admin_id
+           WHERE eq.employee_id = ? 
+           AND eq.is_active = 0
+           ORDER BY eq.deactivated_at DESC`,
           [employeeId]
         );
 

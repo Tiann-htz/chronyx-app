@@ -12,18 +12,64 @@ import { Ionicons } from '@expo/vector-icons';
 export default function NotificationDetailModal({ visible, onClose, notification }) {
   if (!notification) return null;
 
+  // Format date with Philippine Time (UTC+8)
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+    
+    // Convert to Philippine Time (UTC+8)
+    const phTime = new Date(date.getTime() + (8 * 60 * 60 * 1000));
+    
+    return phTime.toLocaleDateString('en-US', { 
       weekday: 'long',
       month: 'long', 
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Manila'
     });
   };
+
+  // Format deactivation reason - remove underscores and capitalize properly
+  const formatReason = (reason) => {
+    if (!reason) return null;
+    
+    // Replace underscores with spaces and capitalize each word
+    return reason
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  // Get appropriate intro message based on reason
+  const getReasonMessage = (reason) => {
+    if (!reason) {
+      return "We apologize for the inconvenience, but your QR code has been temporarily deactivated. No specific reason was provided by the administrator. Please contact your HR department or supervisor for more information.";
+    }
+
+    const formattedReason = formatReason(reason);
+    
+    // Custom messages based on reason type
+    const reasonMessages = {
+      'Excessive Absences': `We regret to inform you that your QR code has been deactivated due to ${formattedReason.toLowerCase()}. Please coordinate with your supervisor or HR department to address this matter and have your QR code reactivated.`,
+      
+      'Unauthorized Overtime': `Your QR code has been temporarily deactivated because of ${formattedReason.toLowerCase()}. Please speak with your immediate supervisor to clarify your work schedule and have this issue resolved.`,
+      
+      'Suspicious Activity': `For security purposes, your QR code has been deactivated due to ${formattedReason.toLowerCase()}. Please contact the HR department immediately to verify your identity and resolve this matter.`,
+      
+      'Employee Request': `Your QR code has been deactivated upon your request. If you did not request this deactivation or wish to have it reactivated, please contact the HR department as soon as possible.`,
+      
+      'Security Concern': `Your QR code has been deactivated due to a ${formattedReason.toLowerCase()}. Please visit the HR department to address this security issue and have your access restored.`,
+      
+      'Other': `We apologize for the inconvenience, but your QR code has been deactivated. The administrator has noted: "${formattedReason}". Please contact your HR department or supervisor for clarification and to have your QR code reactivated.`
+    };
+
+    return reasonMessages[formattedReason] || reasonMessages['Other'];
+  };
+
+  const formattedReason = formatReason(notification.deactivation_reason);
+  const reasonMessage = getReasonMessage(notification.deactivation_reason);
 
   return (
     <Modal
@@ -95,18 +141,18 @@ export default function NotificationDetailModal({ visible, onClose, notification
               <View style={styles.infoCard}>
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>Deactivated On</Text>
-                  <Text style={styles.infoValue}>
+                  <Text style={styles.infoValueDate}>
                     {formatDate(notification.deactivated_at)}
                   </Text>
                 </View>
-                {notification.deactivated_by && (
+                {notification.admin_name && (
                   <>
                     <View style={styles.divider} />
                     <View style={styles.infoRow}>
                       <Text style={styles.infoLabel}>Deactivated By</Text>
                       <View style={styles.adminInfo}>
                         <Ionicons name="person" size={16} color="#64748b" />
-                        <Text style={styles.adminText}>Admin ID: {notification.deactivated_by}</Text>
+                        <Text style={styles.adminText}>{notification.admin_name}</Text>
                       </View>
                     </View>
                   </>
@@ -114,27 +160,23 @@ export default function NotificationDetailModal({ visible, onClose, notification
               </View>
             </View>
 
-            {/* Reason Section */}
+            {/* Reason Section with proper message */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>
                 <Ionicons name="document-text" size={16} color="#1a365d" /> Reason for Deactivation
               </Text>
               <View style={styles.reasonCard}>
-                {notification.deactivation_reason ? (
-                  <>
-                    <Ionicons name="chatbox-ellipses" size={24} color="#64748b" />
-                    <Text style={styles.reasonText}>
-                      {notification.deactivation_reason}
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <Ionicons name="help-circle-outline" size={24} color="#94a3b8" />
-                    <Text style={styles.reasonTextEmpty}>
-                      No reason was provided by the administrator.
-                    </Text>
-                  </>
-                )}
+                <View style={styles.reasonHeader}>
+                  <Ionicons name="alert-circle-outline" size={24} color="#f59e0b" />
+                  {formattedReason && (
+                    <View style={styles.reasonTypeBadge}>
+                      <Text style={styles.reasonTypeText}>{formattedReason}</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.reasonMessage}>
+                  {reasonMessage}
+                </Text>
               </View>
             </View>
 
@@ -149,7 +191,7 @@ export default function NotificationDetailModal({ visible, onClose, notification
                     <Text style={styles.actionNumberText}>1</Text>
                   </View>
                   <Text style={styles.actionText}>
-                    Contact your administrator or HR department for more information
+                    Contact your administrator or HR department immediately for more information about this deactivation
                   </Text>
                 </View>
 
@@ -158,7 +200,7 @@ export default function NotificationDetailModal({ visible, onClose, notification
                     <Text style={styles.actionNumberText}>2</Text>
                   </View>
                   <Text style={styles.actionText}>
-                    Do not attempt to use your deactivated QR code for attendance
+                    Do not attempt to use your deactivated QR code for attendance or access control
                   </Text>
                 </View>
 
@@ -167,9 +209,29 @@ export default function NotificationDetailModal({ visible, onClose, notification
                     <Text style={styles.actionNumberText}>3</Text>
                   </View>
                   <Text style={styles.actionText}>
-                    Wait for your QR code to be reactivated before resuming normal attendance
+                    Follow the instructions provided by your supervisor to resolve this matter and have your QR code reactivated
                   </Text>
                 </View>
+
+                <View style={styles.actionItem}>
+                  <View style={styles.actionNumber}>
+                    <Text style={styles.actionNumberText}>4</Text>
+                  </View>
+                  <Text style={styles.actionText}>
+                    Wait for official confirmation before attempting to use your QR code again
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Contact Info */}
+            <View style={styles.contactCard}>
+              <Ionicons name="call" size={20} color="#3b82f6" />
+              <View style={styles.contactInfo}>
+                <Text style={styles.contactTitle}>Need Help?</Text>
+                <Text style={styles.contactText}>
+                  Please contact the HR Department or your immediate supervisor for assistance with your QR code reactivation.
+                </Text>
               </View>
             </View>
 
@@ -282,6 +344,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     fontWeight: '500',
+    flex: 1,
   },
   infoValue: {
     fontSize: 14,
@@ -289,6 +352,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'right',
     flex: 1,
+    marginLeft: 12,
+  },
+  infoValueDate: {
+    fontSize: 13,
+    color: '#1e293b',
+    fontWeight: '600',
+    textAlign: 'right',
+    flex: 1.5,
     marginLeft: 12,
   },
   divider: {
@@ -330,23 +401,31 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: '#fde68a',
+  },
+  reasonHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
+    justifyContent: 'space-between',
   },
-  reasonText: {
-    fontSize: 15,
-    color: '#1e293b',
-    lineHeight: 24,
-    textAlign: 'center',
-    marginTop: 12,
-    fontWeight: '500',
+  reasonTypeBadge: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#fbbf24',
   },
-  reasonTextEmpty: {
+  reasonTypeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#92400e',
+  },
+  reasonMessage: {
     fontSize: 14,
-    color: '#94a3b8',
+    color: '#1e293b',
     lineHeight: 22,
-    textAlign: 'center',
-    marginTop: 12,
-    fontStyle: 'italic',
+    fontWeight: '500',
   },
   actionCard: {
     backgroundColor: '#f8fafc',
@@ -381,12 +460,36 @@ const styles = StyleSheet.create({
     color: '#475569',
     lineHeight: 22,
   },
+  contactCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#eff6ff',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  contactInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  contactTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1e40af',
+    marginBottom: 4,
+  },
+  contactText: {
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 20,
+  },
   closeActionButton: {
     backgroundColor: '#1a365d',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    marginTop: 8,
     shadowColor: '#1a365d',
     shadowOffset: {
       width: 0,

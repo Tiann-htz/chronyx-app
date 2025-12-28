@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+
 
 const API_URL = 'https://chronyx-app.vercel.app/api/chronyxApi';
 
@@ -367,5 +369,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
-  
+
 });
