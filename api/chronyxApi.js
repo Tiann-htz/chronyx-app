@@ -284,6 +284,7 @@ if (endpoint === 'login' && req.method === 'POST') {
           isActive: qrRecords[0].is_active,
           createdAt: qrRecords[0].created_at,
         });
+        
       } catch (dbError) {
         if (connection) connection.release();
         console.error('Database error:', dbError);

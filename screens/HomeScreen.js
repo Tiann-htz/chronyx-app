@@ -23,10 +23,12 @@ export default function HomeScreen({ navigation }) {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [qrData, setQrData] = useState(null);
+  const [qrIsActive, setQrIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [checkingQR, setCheckingQR] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  
   
   // New state for real data
   const [todayAttendance, setTodayAttendance] = useState(null);
@@ -157,6 +159,7 @@ export default function HomeScreen({ navigation }) {
 
       if (response.data.success && response.data.qrCode) {
         setQrData(response.data.qrCode);
+        setQrIsActive(response.data.isActive); // Add this line
       }
     } catch (error) {
       console.error('Error checking QR:', error);
@@ -301,10 +304,22 @@ export default function HomeScreen({ navigation }) {
                   <ActivityIndicator color="#1a365d" />
                   <Text style={styles.qrButtonText}>Loading...</Text>
                 </View>
-              ) : qrData ? (
-                <TouchableOpacity style={[styles.qrButton, styles.qrButtonActive]} onPress={handleShowQR}>
-                  <Ionicons name="qr-code" size={24} color="#ffffff" />
-                  <Text style={styles.qrButtonTextActive}>View My QR Code</Text>
+             ) : qrData ? (
+                <TouchableOpacity 
+                  style={[
+                    styles.qrButton, 
+                    qrIsActive ? styles.qrButtonActive : styles.qrButtonDeactivated
+                  ]} 
+                  onPress={handleShowQR}
+                >
+                  <Ionicons 
+                    name={qrIsActive ? "qr-code" : "alert-circle"} 
+                    size={24} 
+                    color="#ffffff" 
+                  />
+                  <Text style={styles.qrButtonTextActive}>
+                    {qrIsActive ? "View My QR Code" : "QR Code Deactivated"}
+                  </Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -506,6 +521,8 @@ export default function HomeScreen({ navigation }) {
         onClose={() => setShowQRModal(false)}
         qrData={qrData || ''}
         userName={`${user?.firstName} ${user?.lastName}`}
+        isActive={qrIsActive}
+        navigation={navigation}
       />
     </View>
   );
@@ -606,6 +623,9 @@ const styles = StyleSheet.create({
   },
   qrButtonActive: {
     backgroundColor: '#38aa62ff',
+  },
+  qrButtonDeactivated: {
+    backgroundColor: '#ef4444',
   },
   qrButtonCreate: {
     backgroundColor: '#F1F5F9',
@@ -804,5 +824,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-  
+
 });
