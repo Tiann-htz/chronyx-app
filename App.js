@@ -6,9 +6,9 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import HomeScreen from './screens/HomeScreen';
 import MyAccountScreen from './screens/MyAccountScreen';
-import PayrollScreen from './screens/PayrollScreen';
 import SalaryScreen from './screens/SalaryScreen';
 import AttendanceScreen from './screens/AttendanceScreen';
+import NotificationScreen from './screens/NotificationScreen';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
 const Stack = createStackNavigator();
@@ -69,6 +69,16 @@ function AppNavigator() {
                 headerTintColor: '#ffffff',
                 headerTitleStyle: { fontWeight: 'bold' },
                 title: 'My Attendance',
+              }}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationScreen}
+              options={{
+                headerStyle: { backgroundColor: '#0A6BA3' },
+                headerTintColor: '#ffffff',
+                headerTitleStyle: { fontWeight: 'bold' },
+                title: 'Notifications',
               }}
             />
           </>

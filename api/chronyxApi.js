@@ -1036,6 +1036,47 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
+    // GET NOTIFICATIONS ENDPOINT (QR Deactivation Notices)
+    if (endpoint === 'get-notifications' && req.method === 'GET') {
+      const { employeeId } = req.query;
+
+      if (!employeeId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Employee ID is required',
+        });
+      }
+
+      let connection;
+      try {
+        connection = await pool.getConnection();
+
+        // Get only deactivated QR codes (is_active = 0) for this employee
+        const [records] = await connection.execute(
+          `SELECT * FROM employee_qr 
+           WHERE employee_id = ? 
+           AND is_active = 0
+           ORDER BY deactivated_at DESC`,
+          [employeeId]
+        );
+
+        connection.release();
+
+        return res.status(200).json({
+          success: true,
+          data: records,
+        });
+      } catch (dbError) {
+        if (connection) connection.release();
+        console.error('Database error:', dbError);
+        return res.status(500).json({
+          success: false,
+          message: 'Database error',
+          error: dbError.message,
+        });
+      }
+    }
+
     // If no endpoint matches
     return res.status(404).json({
       success: false,
