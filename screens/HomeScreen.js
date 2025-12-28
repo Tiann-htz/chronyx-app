@@ -26,9 +26,7 @@ export default function HomeScreen({ navigation }) {
   const [qrIsActive, setQrIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [checkingQR, setCheckingQR] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
-  
+  const [refreshing, setRefreshing] = useState(false);  
   
   // New state for real data
   const [todayAttendance, setTodayAttendance] = useState(null);
@@ -49,42 +47,13 @@ export default function HomeScreen({ navigation }) {
           style={styles.headerButton}
           onPress={() => setShowSidebar(true)}
         >
-          <View>
-            <Ionicons name="menu" size={28} color="#ffffff" />
-            {unreadNotifications > 0 && (
-              <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>{unreadNotifications}</Text>
-              </View>
-            )}
-          </View>
+          <Ionicons name="menu" size={28} color="#ffffff" />
         </TouchableOpacity>
       ),
     });
   }, [navigation]);
 
-  // Fetch unread notification count
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      try {
-        const response = await axios.get(
-          `${API_URL}?endpoint=get-notifications&employeeId=${user.id}`
-        );
-        if (response.data.success) {
-          setUnreadNotifications(response.data.unreadCount || 0);
-        }
-      } catch (error) {
-        console.error('Error fetching unread count:', error);
-      }
-    };
-
-    fetchUnreadCount();
-    
-    // Refresh count every time screen is focused
-    const interval = setInterval(fetchUnreadCount, 30000); // Every 30 seconds
-    
-    return () => clearInterval(interval);
-  }, [user]);
-
+  
   const fetchAllData = async () => {
     setLoadingData(true);
     try {
@@ -805,24 +774,4 @@ const styles = StyleSheet.create({
     color: '#1a365d',
     marginLeft: 12,
   },
-
-  headerBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: '#ef4444',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#ffffff',
-  },
-  headerBadgeText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-
 });
