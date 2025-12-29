@@ -4,46 +4,49 @@ import {
   Image,
   StyleSheet,
   Animated,
-  Dimensions,
 } from 'react-native';
 
-const { height } = Dimensions.get('window');
-
 export default function SplashScreen({ onFinish }) {
-  const scanLinePosition = useRef(new Animated.Value(-100)).current;
+  const logoPosition = useRef(new Animated.Value(-10)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Start animations
-    Animated.sequence([
-      // Fade in logos
+    Animated.parallel([
+      // Slide from left to center
+      Animated.timing(logoPosition, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      // Fade in
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 500,
+        duration: 1000,
         useNativeDriver: true,
       }),
-      // Wait a bit
-      Animated.delay(300),
-      // Scanning animation
-      Animated.timing(scanLinePosition, {
-        toValue: height + 100,
-        duration: 1500,
-        useNativeDriver: true,
-      }),
-      // Wait before finishing
-      Animated.delay(300),
     ]).start(() => {
-      // Call onFinish when animation completes
-      if (onFinish) {
-        onFinish();
-      }
+      // Wait a bit before finishing
+      setTimeout(() => {
+        if (onFinish) {
+          onFinish();
+        }
+      }, 800);
     });
   }, []);
 
   return (
     <View style={styles.container}>
-      {/* Logo Container */}
-      <Animated.View style={[styles.logoContainer, { opacity: logoOpacity }]}>
+      {/* Logo Container with Animation */}
+      <Animated.View
+        style={[
+          styles.logoContainer,
+          {
+            opacity: logoOpacity,
+            transform: [{ translateX: logoPosition }],
+          },
+        ]}
+      >
         <Image
           source={require('../assets/images/chronyxlogo.png')}
           style={styles.logo}
@@ -54,18 +57,6 @@ export default function SplashScreen({ onFinish }) {
           style={styles.logoText}
           resizeMode="contain"
         />
-      </Animated.View>
-
-      {/* Scanning Line Effect */}
-      <Animated.View
-        style={[
-          styles.scanLine,
-          {
-            transform: [{ translateY: scanLinePosition }],
-          },
-        ]}
-      >
-        <View style={styles.scanLineGradient} />
       </Animated.View>
     </View>
   );
@@ -91,25 +82,5 @@ const styles = StyleSheet.create({
   logoText: {
     width: 180,
     height: 50,
-  },
-  scanLine: {
-    position: 'absolute',
-    width: '100%',
-    height: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scanLineGradient: {
-    width: '100%',
-    height: 3,
-    backgroundColor: '#0A7EB1',
-    shadowColor: '#0A7EB1',
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    shadowOpacity: 0.8,
-    shadowRadius: 15,
-    elevation: 5,
   },
 });
