@@ -152,9 +152,9 @@ if (endpoint === 'login' && req.method === 'POST') {
   try {
     connection = await pool.getConnection();
 
-    // Select all necessary fields including avatar_url
+    // Select all necessary fields including avatar_url and is_active
     const [employees] = await connection.execute(
-      'SELECT employee_id, first_name, last_name, email, avatar_url FROM employee WHERE email = ? AND password = ?',
+      'SELECT employee_id, first_name, last_name, email, avatar_url, is_active FROM employee WHERE email = ? AND password = ?',
       [email, password]
     );
 
@@ -164,6 +164,16 @@ if (endpoint === 'login' && req.method === 'POST') {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password',
+      });
+    }
+
+    // Check if account is deactivated
+    if (employees[0].is_active === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account deactivated',
+        accountDeactivated: true,
+        employeeName: `${employees[0].first_name} ${employees[0].last_name}`,
       });
     }
 

@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
+import AccountDeactivatedModal from '../components/AccountDeactivatedModal';
 
 const API_URL = 'https://chronyx-app.vercel.app/api/chronyxApi';
 
@@ -26,6 +27,8 @@ export default function LoginScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const { login } = useAuth();
+  const [showDeactivatedModal, setShowDeactivatedModal] = useState(false);
+  const [deactivatedEmployeeName, setDeactivatedEmployeeName] = useState('');
 
   const handleLogin = async () => {
     // Validate input
@@ -56,7 +59,13 @@ export default function LoginScreen({ navigation }) {
       console.error('Login error:', error);
       
       if (error.response) {
-        Alert.alert('Error', error.response.data.message || 'Login failed');
+        // Check if account is deactivated
+        if (error.response.data.accountDeactivated) {
+          setDeactivatedEmployeeName(error.response.data.employeeName);
+          setShowDeactivatedModal(true);
+        } else {
+          Alert.alert('Error', error.response.data.message || 'Login failed');
+        }
       } else if (error.request) {
         Alert.alert('Error', 'Cannot connect to server. Please check your internet connection.');
       } else {
@@ -194,6 +203,12 @@ export default function LoginScreen({ navigation }) {
         visible={showForgotModal}
         onClose={() => setShowForgotModal(false)}
         email={email}
+      />
+
+      <AccountDeactivatedModal
+        visible={showDeactivatedModal}
+        onClose={() => setShowDeactivatedModal(false)}
+        employeeName={deactivatedEmployeeName}
       />
     </KeyboardAvoidingView>
   );
