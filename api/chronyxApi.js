@@ -27,7 +27,13 @@ module.exports = async (req, res) => {
   const { endpoint } = req.query;
 
   try {
-    // TEST ENDPOINT - Check if API is working with detailed env info
+
+
+    // API ENDPOINT: TEST
+    // Connected to: Testing/Debugging (any screen can call this)
+    // Purpose: Verify if API and database connection are working
+    // Database: Tests connection to 'chronyx' database
+    // Returns: API status, environment info, and connection status
     if (endpoint === 'test' && req.method === 'GET') {
       const envInfo = {
         hasHost: !!process.env.MYSQL_HOST,
@@ -62,7 +68,22 @@ module.exports = async (req, res) => {
       });
     }
 
-    // SIGNUP ENDPOINT - Create new employee
+
+
+
+
+
+
+
+    // API ENDPOINT: SIGNUP
+    // Connected to: SignupScreen.js
+    // Purpose: Create a new employee account
+    // Database Table: 'employee'
+    // SQL Query: INSERT new record with first_name, last_name, email, password
+    // Flow:
+    // 1. Check if email already exists sa employee table
+    // 2. If wala pa, insert new employee
+    // 3. Return success with new employee ID
     if (endpoint === 'signup' && req.method === 'POST') {
       const { firstName, lastName, email, password } = req.body;
 
@@ -137,7 +158,26 @@ module.exports = async (req, res) => {
       }
     }
 
-    // LOGIN ENDPOINT - Authenticate employee
+
+
+
+
+
+
+
+    // API ENDPOINT: LOGIN
+    // Connected to: LoginScreen.js
+    // Purpose: Authenticate employee credentials
+    // Database Table: 'employee'
+    // SQL Query: SELECT employee where email AND password match
+
+    // Flow:
+    // 1. Find employee sa table using email ug password
+    // 2. Check if account is active (is_active = 1)
+    // 3. If deactivated, return error with account status
+    // 4. If active, return user data (id, name, email, avatarUrl)
+
+    // Special: Also checks 'is_active' column - if 0, account is deactivated
 if (endpoint === 'login' && req.method === 'POST') {
   const { email, password } = req.body;
 
@@ -199,7 +239,18 @@ if (endpoint === 'login' && req.method === 'POST') {
   }
 }
 
-    // CREATE QR CODE ENDPOINT
+
+
+// API ENDPOINT: CREATE-QR
+// Connected to: HomeScreen.js
+// Purpose: Generate unique QR code for employee
+// Database Table: 'employee_qr'
+// SQL Query: INSERT qr_code, employee_id, name, email
+// Flow:
+// 1. Check if employee already has QR code
+// 2. If wala pa, generate unique QR code (format: QL-USERID-TIMESTAMP)
+// 3. Save to employee_qr table
+// 4. Return QR code string
     if (endpoint === 'create-qr' && req.method === 'POST') {
       const { userId, firstName, lastName, email } = req.body;
 
@@ -257,7 +308,17 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // CHECK QR CODE ENDPOINT
+
+
+
+
+
+// API ENDPOINT: CHECK-QR
+// Connected to: HomeScreen.js
+// Purpose: Check if employee has existing QR code
+// Database Table: 'employee_qr'
+// SQL Query: SELECT qr_code where employee_id matches
+// Returns: QR code data with active status
     if (endpoint === 'check-qr' && req.method === 'GET') {
       const { userId } = req.query;
 
@@ -305,8 +366,17 @@ if (endpoint === 'login' && req.method === 'POST') {
         });
       }
     }
+
    
-    // GET ACCOUNT INFO ENDPOINT - Fetch created_at and updated_at
+
+
+
+// API ENDPOINT: GET-ACCOUNT-INFO
+// Connected to: MyAccountScreen.js
+// Purpose: Get account creation and update dates
+// Database Table: 'employee'
+// SQL Query: SELECT created_at, updated_at where employee_id matches
+// Returns: Account timestamps
     if (endpoint === 'get-account-info' && req.method === 'GET') {
       const { userId } = req.query;
 
@@ -351,7 +421,16 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // GET USER PROFILE (including avatar)
+
+
+
+
+// API ENDPOINT: GET-PROFILE
+// Connected to: MyAccountScreen.js
+// Purpose: Fetch complete user profile data
+// Database Table: 'employee'
+// SQL Query: SELECT all employee details including avatar_url
+// Returns: Full user profile object
     if (endpoint === 'get-profile' && req.method === 'GET') {
       const { userId } = req.query;
 
@@ -403,7 +482,20 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // UPDATE PROFILE ENDPOINT - Update employee details
+
+
+
+
+
+// API ENDPOINT: UPDATE-PROFILE
+// Connected to: MyAccountScreen.js
+// Purpose: Update employee information
+// Database Tables: 'employee', 'employee_qr'
+// SQL Queries:
+// 1. Check if new email already exists (except current user)
+// 2. UPDATE employee table with new data
+// 3. UPDATE employee_qr table to sync name/email
+// Flow: Updates both tables to keep data synchronized
     if (endpoint === 'update-profile' && req.method === 'POST') {
       const { userId, firstName, lastName, email } = req.body;
 
@@ -470,7 +562,17 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // UPDATE AVATAR ENDPOINT
+
+
+
+
+
+// API ENDPOINT: UPDATE-AVATAR
+// Connected to: MyAccountScreen.js
+// Purpose: Update employee profile picture
+// Database Table: 'employee'
+// SQL Query: UPDATE avatar_url where employee_id matches
+// Flow: Saves Cloudinary image URL to database
     if (endpoint === 'update-avatar' && req.method === 'POST') {
       const { userId, avatarUrl } = req.body;
 
@@ -517,7 +619,17 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // CHANGE PASSWORD ENDPOINT
+
+
+
+// API ENDPOINT: CHANGE-PASSWORD
+// Connected to: MyAccountScreen.js (Password Change Modal)
+// Purpose: Change employee password
+// Database Table: 'employee'
+// SQL Queries:
+// 1. SELECT employee to verify current password
+// 2. UPDATE password if verification succeeds
+// Security: Validates current password before updating
     if (endpoint === 'change-password' && req.method === 'POST') {
       const { userId, currentPassword, newPassword } = req.body;
 
@@ -579,7 +691,18 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // FORGOT PASSWORD ENDPOINT - Reset password with verification
+
+
+
+
+// API ENDPOINT: FORGOT-PASSWORD
+// Connected to: LoginScreen.js (ForgotPasswordModal.js)
+// Purpose: Reset password using employee credentials
+// Database Table: 'employee'
+// SQL Queries:
+// 1. SELECT employee using email, employee_id, first_name, last_name
+// 2. UPDATE password if all credentials match
+// Security: Requires multiple verification fields before reset
     if (endpoint === 'forgot-password' && req.method === 'POST') {
       const { email, employeeId, firstName, lastName, newPassword } = req.body;
 
@@ -648,7 +771,16 @@ if (endpoint === 'login' && req.method === 'POST') {
     }
 
 
-    // GET TODAY'S ATTENDANCE ENDPOINT
+
+
+// API ENDPOINT: GET-TODAY-ATTENDANCE
+// Connected to: HomeScreen.js
+// Purpose: Fetch employee's attendance record for today
+// Database Table: 'attendance'
+// SQL Queries:
+// 1. SELECT time-in record for today's date
+// 2. SELECT time-out record for today's date
+// Returns: Time in, time out, status, late/overtime minutes
     if (endpoint === 'get-today-attendance' && req.method === 'GET') {
       const { employeeId } = req.query;
 
@@ -717,7 +849,17 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // GET TIME POLICY ENDPOINT
+
+
+
+
+
+// API ENDPOINT: GET-TIME-POLICY
+// Connected to: HomeScreen.js
+// Purpose: Get company's working hours policy
+// Database Table: 'time_policy'
+// SQL Query: SELECT latest policy record
+// Returns: Official work hours, grace period, required hours
     if (endpoint === 'get-time-policy' && req.method === 'GET') {
       let connection;
       try {
@@ -752,7 +894,16 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // GET MONTHLY STATS ENDPOINT
+
+
+
+
+// API ENDPOINT: GET-MONTHLY-STATS
+// Connected to: HomeScreen.js, AttendanceScreen.js
+// Purpose: Get employee's monthly attendance statistics
+// Database Table: 'attendance'
+// SQL Query: COUNT distinct dates with time-in records
+// Returns: Total days present for the month
     if (endpoint === 'get-monthly-stats' && req.method === 'GET') {
       const { employeeId, month, year } = req.query;
 
@@ -797,7 +948,16 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-     // GET ATTENDANCE HISTORY ENDPOINT
+
+
+
+
+// API ENDPOINT: GET-ATTENDANCE-HISTORY
+// Connected to: AttendanceScreen.js
+// Purpose: Fetch attendance records with optional filters
+// Database Table: 'attendance'
+// SQL Query: SELECT attendance records filtered by month, year, status
+// Returns: Array of attendance records sorted by date
     if (endpoint === 'get-attendance-history' && req.method === 'GET') {
       const { employeeId, month, year, status } = req.query;
 
@@ -848,7 +1008,20 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // GET MONTHLY SUMMARY ENDPOINT
+
+
+
+
+// API ENDPOINT: GET-MONTHLY-SUMMARY
+// Connected to: AttendanceScreen.js
+// Purpose: Calculate monthly attendance summary
+// Database Table: 'attendance'
+// SQL Queries:
+// 1. COUNT days present
+// 2. SUM total hours worked (time-in to time-out)
+// 3. COUNT late instances
+// 4. SUM overtime minutes
+// Returns: Complete monthly statistics
     if (endpoint === 'get-monthly-summary' && req.method === 'GET') {
       const { employeeId, month, year } = req.query;
 
@@ -954,7 +1127,15 @@ if (endpoint === 'login' && req.method === 'POST') {
     }
 
 
-    // GET CURRENT SALARY PERIOD ENDPOINT
+
+
+
+// API ENDPOINT: GET-CURRENT-SALARY
+// Connected to: SalaryScreen.js
+// Purpose: Get current/active payroll period
+// Database Table: 'payroll'
+// SQL Query: SELECT latest payroll record for employee
+// Returns: Current period salary details
     if (endpoint === 'get-current-salary' && req.method === 'GET') {
       const { employeeId } = req.query;
 
@@ -1003,7 +1184,14 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // GET SALARY HISTORY ENDPOINT
+
+
+// API ENDPOINT: GET-SALARY-HISTORY
+// Connected to: SalaryScreen.js
+// Purpose: Fetch past payroll records
+// Database Table: 'payroll'
+// SQL Query: SELECT payroll records (excluding current period)
+// Returns: Array of historical salary records
     if (endpoint === 'get-salary-history' && req.method === 'GET') {
       const { employeeId } = req.query;
 
@@ -1047,7 +1235,15 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // GET NOTIFICATIONS ENDPOINT (QR Deactivation Notices)
+
+
+// API ENDPOINT: GET-NOTIFICATIONS
+// Connected to: NotificationScreen.js, Sidebar.js
+// Purpose: Fetch QR deactivation notifications
+// Database Tables: 'employee_qr', 'admin'
+// SQL Query: SELECT deactivated QR codes with admin details (LEFT JOIN)
+// Returns: Notifications array with unread count
+// Special: Joins with admin table to show who deactivated QR
     if (endpoint === 'get-notifications' && req.method === 'GET') {
       const { employeeId } = req.query;
 
@@ -1100,7 +1296,16 @@ if (endpoint === 'login' && req.method === 'POST') {
       }
     }
 
-    // MARK NOTIFICATION AS READ ENDPOINT
+
+
+
+
+// API ENDPOINT: MARK-NOTIFICATION-READ
+// Connected to: NotificationScreen.js
+// Purpose: Mark notification as read
+// Database Table: 'employee_qr'
+// SQL Query: UPDATE is_read = 1 where qr_id matches
+// Updates: Changes notification status from unread to read
     if (endpoint === 'mark-notification-read' && req.method === 'POST') {
       const { qrId } = req.body;
 
@@ -1137,6 +1342,12 @@ if (endpoint === 'login' && req.method === 'POST') {
         });
       }
     }
+
+
+
+
+
+
 
     // If no endpoint matches
     return res.status(404).json({
